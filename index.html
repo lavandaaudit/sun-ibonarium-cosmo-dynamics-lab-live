@@ -30,15 +30,15 @@ html, body {
 /* ================= WRAPPER (внизу) ================= */
 .wrapper {
   position: fixed;
-  bottom: 20px;
+  bottom: 15px;           /* трохи підняли весь блок вгору */
   left: 0;
   right: 0;
   z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  padding: 10px;
+  gap: 10px;              /* зменшили відступи */
+  padding: 8px;
   pointer-events: none;
 }
 .controls {
@@ -46,7 +46,7 @@ html, body {
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  gap: 10px;
+  gap: 8px;               /* менші відступи між кнопками */
   pointer-events: auto;
 }
 button {
@@ -54,8 +54,8 @@ button {
   border: 1px solid #4dd2ff;
   color: #4dd2ff;
   font-family: "Courier New", monospace;
-  font-size: 13px;          /* трохи менший шрифт */
-  padding: 6px 12px;        /* менші кнопки */
+  font-size: 12px;        /* ще трохи зменшили шрифт кнопок */
+  padding: 5px 10px;       /* менші кнопки */
   border-radius: 6px;
   cursor: pointer;
   transition: 0.3s;
@@ -63,12 +63,12 @@ button {
 }
 button:hover {
   background: rgba(77,210,255,0.15);
-  box-shadow: 0 0 12px rgba(77,210,255,0.6);
+  box-shadow: 0 0 10px rgba(77,210,255,0.6);
 }
 button.active {
   background: #4dd2ff;
   color: #000;
-  box-shadow: 0 0 20px #4dd2ff;
+  box-shadow: 0 0 18px #4dd2ff;
 }
 /* ================= TEXT ================= */
 .text-block {
@@ -78,12 +78,19 @@ button.active {
   text-align: center;
   pointer-events: auto;
 }
-.main-text { font-size: 16px; letter-spacing: 1px; }
-.sub-text { font-size: 13px; letter-spacing: 1px; opacity: 0.8; }
-.footer-text { 
-  font-size: 11px; 
+.main-text { 
+  font-size: 14px;        /* зменшили головний текст */
   letter-spacing: 1px; 
-  opacity: 0.6; 
+}
+.sub-text { 
+  font-size: 12px;        /* зменшили підпис */
+  letter-spacing: 1px; 
+  opacity: 0.8; 
+}
+.footer-text {
+  font-size: 10px;        /* зменшили футер */
+  letter-spacing: 1px;
+  opacity: 0.6;
 }
 .footer-text a {
   color: #4dd2ff;
@@ -91,14 +98,14 @@ button.active {
 }
 /* ================= MOBILE ================= */
 @media (max-width: 600px) {
-  button { 
-    font-size: 11px; 
-    padding: 5px 10px; 
+  button {
+    font-size: 10px;
+    padding: 4px 8px;
   }
-  .main-text { font-size: 14px; }
-  .sub-text { font-size: 12px; }
-  .footer-text { font-size: 10px; }
-  .wrapper { bottom: 10px; gap: 8px; }
+  .main-text { font-size: 13px; }
+  .sub-text { font-size: 11px; }
+  .footer-text { font-size: 9px; }
+  .wrapper { bottom: 8px; gap: 6px; }
 }
 </style>
 </head>
@@ -203,7 +210,9 @@ function drawSun() {
   if (img.complete && img.naturalWidth > 0) {
     const w = img.width * scale;
     const h = img.height * scale;
-    ctx.drawImage(img, (W - w) / 2, (H - h) / 2, w, h);
+    // Підняли Сонце трохи вгору (зміщення по Y на -8% висоти екрану)
+    const offsetY = H * -0.08;
+    ctx.drawImage(img, (W - w) / 2, (H - h) / 2 + offsetY, w, h);
   }
 }
 
