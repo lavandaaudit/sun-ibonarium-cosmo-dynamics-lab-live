@@ -37,10 +37,52 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;              
+  gap: 12px;              
   padding: 8px;
   pointer-events: none;
 }
+
+/* ================= НОВИЙ БЛОК КОСМІЧНОЇ ПОГОДИ ================= */
+.space-weather {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  pointer-events: auto;
+  text-align: center;
+}
+.space-weather .title {
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  opacity: 0.8;
+}
+.space-weather .kp-bar {
+  width: 260px;
+  height: 4px;
+  background: rgba(77,210,255,0.15);
+  position: relative;
+  margin: 4px 0;
+}
+.space-weather .kp-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #9fe7ff, #4dd2ff);
+  transition: width 0.8s ease;
+  box-shadow: 0 0 8px rgba(77,210,255,0.4);
+}
+.space-weather .data-line {
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  opacity: 0.9;
+}
+.space-weather .warning {
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  opacity: 0;
+  transition: opacity 0.5s;
+}
+
+/* ================= CONTROLS ================= */
 .controls {
   display: flex;
   flex-wrap: wrap;
@@ -105,14 +147,37 @@ button.active {
   .main-text { font-size: 13px; }
   .sub-text { font-size: 11px; }
   .footer-text { font-size: 9px; }
-  .wrapper { bottom: 8px; gap: 6px; }
+  .wrapper { bottom: 8px; gap: 8px; }
+  .space-weather .kp-bar { width: 200px; }
+  .space-weather .title, .space-weather .data-line, .space-weather .warning {
+    font-size: 10px;
+  }
 }
 </style>
 </head>
 <body>
 <canvas id="starsCanvas"></canvas>
 <canvas id="sunCanvas"></canvas>
+
 <div class="wrapper">
+  <!-- Блок космічної погоди -->
+  <div class="space-weather">
+    <div class="title">КОСМІЧНА ПОГОДА</div>
+    
+    <div>
+      <div class="data-line" id="kp-text">KP: —</div>
+      <div class="kp-bar">
+        <div class="kp-fill" id="kp-fill"></div>
+      </div>
+      <div class="warning" id="storm-warning"></div>
+    </div>
+    
+    <div class="data-line" id="solar-wind-label">ШВИДКІСТЬ: — KM/S │ ЩІЛЬНІСТЬ: — P/CM³</div>
+    <div class="data-line" id="bz-label">BZ: — НТ</div>
+    <div class="data-line" id="bz-status-label">ОЧІКУВАННЯ ДАНИХ...</div>
+  </div>
+
+  <!-- Кнопки перемикання каналів -->
   <div class="controls">
     <button id="minusBtn">–</button>
     <button id="plusBtn">+</button>
@@ -121,6 +186,8 @@ button.active {
     <button class="channelBtn" data-ch="193">193 Å</button>
     <button class="channelBtn" data-ch="211">211 Å</button>
   </div>
+
+  <!-- Текстова інформація -->
   <div class="text-block">
     <div class="main-text" id="photoTime">завантаження...</div>
     <div class="sub-text">
@@ -135,6 +202,7 @@ button.active {
     </div>
   </div>
 </div>
+
 <script>
 /* ================= STARS BACKGROUND ================= */
 const starsCanvas = document.getElementById("starsCanvas");
@@ -210,13 +278,12 @@ function drawSun() {
   if (img.complete && img.naturalWidth > 0) {
     const w = img.width * scale;
     const h = img.height * scale;
-    // Підняли Сонце трохи вгору (зміщення по Y на -8% висоти екрану)
     const offsetY = H * -0.08;
     ctx.drawImage(img, (W - w) / 2, (H - h) / 2 + offsetY, w, h);
   }
 }
 
-/* ================= КЕРУВАННЯ ================= */
+/* ================= КЕРУВАННЯ КАНАЛАМИ ТА МАСШТАБОМ ================= */
 document.getElementById("minusBtn").addEventListener("click", () => {
   scale = Math.max(0.4, scale - 0.15);
   drawSun();
@@ -243,8 +310,120 @@ sunCanvas.addEventListener("wheel", e => {
   drawSun();
 });
 
+/* ================= ДАНІ КОСМІЧНОЇ ПОГОДИ ================= */
+const KP_URL = "https://services.swpc.noaa.gov/json/planetary_k_index_1m.json";
+const SW_URL = "https://services.swpc.noaa.gov/products/solar-wind/plasma-6-hour.json";
+const BZ_URL = "https://services.swpc.noaa.gov/products/solar-wind/mag-6-hour.json";
+
+let currentKp = null;
+
+async function getKp() {
+  try {
+    const r = await fetch(KP_URL);
+    const d = await r.json();
+    for (let i = d.length - 1; i >= 0; i--) {
+      if (d[i].kp_index !== null) return parseFloat(d[i].kp_index);
+    }
+  } catch (e) { console.error(e); }
+  return null;
+}
+
+async function getSW() {
+  try {
+    const r = await fetch(SW_URL);
+    const d = await r.json();
+    for (let i = d.length - 1; i >= 0; i--) {
+      const row = d[i];
+      if (row.length >= 3 && row[1] && row[2]) return [parseFloat(row[1]), parseFloat(row[2])];
+    }
+  } catch (e) { console.error(e); }
+  return [null, null];
+}
+
+async function getBz() {
+  try {
+    const r = await fetch(BZ_URL);
+    const d = await r.json();
+    for (let i = d.length - 1; i >= 0; i--) {
+      const row = d[i];
+      if (row.length >= 5 && row[4]) return parseFloat(row[4]);
+    }
+  } catch (e) { console.error(e); }
+  return null;
+}
+
+/* Оновлення інтерфейсу */
+function updateSpaceWeather(kp, spd, den, bz) {
+  const kpText = document.getElementById('kp-text');
+  const kpFill = document.getElementById('kp-fill');
+  const stormWarning = document.getElementById('storm-warning');
+  const swLabel = document.getElementById('solar-wind-label');
+  const bzLabel = document.getElementById('bz-label');
+  const bzStatus = document.getElementById('bz-status-label');
+
+  // Kp
+  if (kp === null) {
+    kpText.textContent = 'KP: —';
+    kpFill.style.width = '0%';
+    stormWarning.textContent = '';
+    stormWarning.style.opacity = '0';
+  } else {
+    currentKp = kp;
+    kpText.textContent = `KP: ${kp.toFixed(2)}`;
+    kpFill.style.width = `${kp * 10}%`;
+
+    let message = '';
+    let color = '#9fe7ff';
+    if (kp >= 7) { message = 'ГЕОМАГНІТНА БУРЯ G3 — СИЛЬНА'; color = '#ff3366'; }
+    else if (kp >= 6) { message = 'ГЕОМАГНІТНА БУРЯ G2 — ПОМІРНА'; color = '#ff6666'; }
+    else if (kp >= 5) { message = 'ГЕОМАГНІТНА БУРЯ G1 — СЛАБКА'; color = '#ffaa66'; }
+    else if (kp >= 4) { message = 'АКТИВНІ УМОВИ — МОЖЛИВІ ПОЛЯРНІ СЯЙВА'; color = '#ffcc88'; }
+
+    stormWarning.textContent = message;
+    stormWarning.style.color = color;
+    stormWarning.style.opacity = message ? '1' : '0';
+  }
+
+  // Сонячний вітер
+  if (spd && den) {
+    swLabel.textContent = `ШВИДКІСТЬ: ${spd.toFixed(0)} KM/S │ ЩІЛЬНІСТЬ: ${den.toFixed(1)} P/CM³`;
+    swLabel.style.opacity = spd > 600 ? '1' : '0.8';
+  } else {
+    swLabel.textContent = 'ШВИДКІСТЬ: — KM/S │ ЩІЛЬНІСТЬ: — P/CM³';
+  }
+
+  // Bz
+  if (bz !== null) {
+    let col, status, op = 1;
+    if (bz < -12) { col = '#ff3366'; status = 'ЕКСТРЕМАЛЬНА БУРЯ — АВРОРА В УКРАЇНІ!'; }
+    else if (bz < -8) { col = '#ff6666'; status = 'СИЛЬНА БУРЯ'; }
+    else if (bz < -5) { col = '#ffaa66'; status = 'ПОПЕРЕДЖЕННЯ'; }
+    else if (bz < 0) { col = '#ffcc88'; status = 'ПІВДЕННИЙ BZ — СТЕЖИМО'; }
+    else if (bz > 8) { col = '#66ff99'; status = 'АБСОЛЮТНИЙ СПОКІЙ'; }
+    else if (bz > 3) { col = '#99ffcc'; status = 'СПОКІЙНО'; }
+    else { col = '#dddd88'; status = 'НЕЙТРАЛЬНО'; }
+
+    bzLabel.textContent = `BZ: ${bz.toFixed(1)} НТ`;
+    bzLabel.style.color = col;
+    bzStatus.textContent = status;
+    bzStatus.style.color = col;
+    bzStatus.style.opacity = op;
+  } else {
+    bzLabel.textContent = 'BZ: — НТ';
+    bzStatus.textContent = 'ОЧІКУВАННЯ ДАНИХ...';
+  }
+}
+
+async function updateSpaceWeatherData() {
+  const kp = await getKp();
+  const [spd, den] = await getSW();
+  const bz = await getBz();
+  updateSpaceWeather(kp, spd, den, bz);
+}
+
 /* ================= АВТООНОВЛЕННЯ ================= */
-setInterval(() => loadSun(channel), 300000); // кожні 5 хвилин
+setInterval(() => loadSun(channel), 300000); // Сонце кожні 5 хв
+setInterval(updateSpaceWeatherData, 300000); // Космічна погода кожні 5 хв
 
 /* ================= РЕСАЙЗ ================= */
 window.addEventListener("resize", () => {
@@ -255,8 +434,7 @@ window.addEventListener("resize", () => {
 
 /* ================= СТАРТ ================= */
 loadSun(channel);
+updateSpaceWeatherData();
 </script>
 </body>
 </html>
-
-
