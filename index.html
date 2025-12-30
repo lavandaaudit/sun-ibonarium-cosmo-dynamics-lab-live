@@ -6,26 +6,11 @@
 <title>Живе Сонце • SDO AIA</title>
 <style>
 /* ================= RESET ================= */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-html, body {
-  width: 100%;
-  height: 100%;
-  background: #000;
-  color: #9fe7ff;
-  font-family: "Courier New", monospace;
-  overflow: hidden;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; height: 100%; background: #000; color: #9fe7ff; font-family: "Courier New", monospace; overflow: hidden; }
 
-/* ================= BACKGROUNDS ================= */
-#hackerCanvas, #sunCanvas {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-}
+/* ================= CANVAS ================= */
+#hackerCanvas, #sunCanvas { position: fixed; inset: 0; z-index: 0; }
 #sunCanvas { z-index: 1; }
 
 /* ================= WRAPPER ================= */
@@ -79,23 +64,9 @@ button.active {
   gap: 4px;
   margin-top: 6px;
 }
-
-.main-text {
-  font-size: 16px;
-  letter-spacing: 1.2px;
-}
-
-.sub-text {
-  font-size: 13px;
-  letter-spacing: 1px;
-  opacity: 0.8;
-}
-
-.footer-text {
-  font-size: 10px;
-  letter-spacing: 1px;
-  opacity: 0.45;
-}
+.main-text { font-size: 16px; letter-spacing: 1.2px; }
+.sub-text { font-size: 13px; letter-spacing: 1px; opacity: 0.8; }
+.footer-text { font-size: 10px; letter-spacing: 1px; opacity: 0.45; }
 </style>
 </head>
 <body>
@@ -143,9 +114,8 @@ const drops = Array(columns).fill(1);
 function drawHacker() {
   hctx.fillStyle = "rgba(0,0,0,0.05)";
   hctx.fillRect(0,0,W,H);
-  hctx.fillStyle = "#0ff"; // cyan neon
+  hctx.fillStyle = "#0ff";
   hctx.font = fontSize + "px Courier New";
-
   for(let i=0; i<drops.length; i++){
     const text = letters[Math.floor(Math.random() * letters.length)];
     hctx.fillText(text, i*fontSize, drops[i]*fontSize);
@@ -171,10 +141,13 @@ const photoTimeEl = document.getElementById("photoTime");
 async function loadSun(ch = 171) {
     const now = new Date();
     const dateStr = now.toISOString();
-    const url = `https://api.helioviewer.org/v1/takeScreenshot/?date=${encodeURIComponent(dateStr)}&imageScale=2.4204409&layers=[SDO,AIA,AIA,${ch},1,100]&x0=0&y0=0&width=1024&height=1024&format=png&display=true&watermark=false`;
+    // CORS-проксі
+    const corsProxy = "https://cors-anywhere.herokuapp.com/";
+    const helioviewerURL = `https://api.helioviewer.org/v1/takeScreenshot/?date=${encodeURIComponent(dateStr)}&imageScale=2.4204409&layers=[SDO,AIA,AIA,${ch},1,100]&x0=0&y0=0&width=1024&height=1024&format=png&display=true&watermark=false`;
+    const url = corsProxy + helioviewerURL;
 
     try {
-        const resp = await fetch(url, {headers: {"User-Agent": "Mozilla/5.0"}});
+        const resp = await fetch(url, {headers: {"X-Requested-With": "XMLHttpRequest"}});
         const blob = await resp.blob();
         const headerTime = resp.headers.get('X-Observation-Date');
         photoTime = headerTime ? headerTime.replace("T", " ").split(".")[0] + " UTC" 
@@ -227,10 +200,11 @@ sunCanvas.addEventListener("wheel", e=>{
     e.preventDefault();
 });
 
+// Автооновлення раз на 5 хвилин
 setInterval(async ()=>{
     await loadSun(channel);
     drawSun();
-}, 60000);
+}, 300000);
 
 window.addEventListener("resize", ()=>{
     W = hackerCanvas.width = sunCanvas.width = window.innerWidth;
