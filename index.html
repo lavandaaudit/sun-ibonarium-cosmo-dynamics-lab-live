@@ -2,7 +2,7 @@
 <html lang="uk">
 <head>
 <meta charset="UTF-8">
-<title>Живе Сонце • SDO AIA</title>
+<title>Живе Сонце • Helioviewer API V2</title>
 <style>
     body { background: black; color: white; font-family: "Segoe UI", sans-serif; margin: 0; }
     canvas { display: block; margin: auto; background: #000; }
@@ -18,10 +18,10 @@
     <button id="plusBtn">+</button>
     <button id="saveBtn">ЗБЕРЕГТИ (JPEG)</button>
     <br>
-    <button class="channelBtn" data-ch="171">171</button>
-    <button class="channelBtn" data-ch="304">304</button>
-    <button class="channelBtn" data-ch="193">193</button>
-    <button class="channelBtn" data-ch="211">211</button>
+    <button class="channelBtn" data-id="10">171</button>
+    <button class="channelBtn" data-id="13">304</button>
+    <button class="channelBtn" data-id="11">193</button>
+    <button class="channelBtn" data-id="12">211</button>
     <div id="photoTime" style="margin-top: 10px; color: #9999ff;"></div>
 </div>
 
@@ -30,85 +30,72 @@ const canvas = document.getElementById('sunCanvas');
 const ctx = canvas.getContext('2d');
 
 let scale = 1.0;
-let channel = 171;
+let sourceId = 10; // 171 Å
 let img = new Image();
 let photoTime = "завантаження...";
-let lastUpdate = 0;
 
-async function loadSun(ch = 171) {
-    const now = new Date();
-    const dateStr = now.toISOString();
-
-    const url = `https://api.helioviewer.org/v1/takeScreenshot/?date=${encodeURIComponent(dateStr)}&imageScale=2.4204409&layers=[SDO,AIA,AIA,${ch},1,100]&x0=0&y0=0&width=1024&height=1024&format=png&display=true&watermark=false`;
+async function loadSun(id = 10) {
+    const now = new Date().toISOString();
+    const url = `https://api.helioviewer.org/v2/takeScreenshot/?date=${encodeURIComponent(now)}&imageScale=2.42&layers=[${id}]&x0=0&y0=0&width=1024&height=1024&display=true&watermark=true`;
 
     try {
-        const resp = await fetch(url, {headers: {"User-Agent": "Mozilla/5.0"}});
+        const resp = await fetch(url);
         const blob = await resp.blob();
 
-        // Час спостереження
-        const headerTime = resp.headers.get('X-Observation-Date');
-        photoTime = headerTime ? headerTime.replace("T", " ").split(".")[0] + " UTC" 
-                               : dateStr.split(".")[0] + " UTC";
+        photoTime = now.replace("T", " ").split(".")[0] + " UTC";
 
         return new Promise(resolve => {
             img.onload = () => resolve(img);
             img.src = URL.createObjectURL(blob);
         });
-    } catch(e) {
-        console.error("Не вдалося завантажити:", e);
+    } catch (e) {
+        console.error("Помилка завантаження:", e);
         photoTime = "немає зв'язку";
     }
 }
 
 function draw() {
     ctx.fillStyle = "black";
-    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    if(img.complete){
+    if (img.complete) {
         const w = img.width * scale;
         const h = img.height * scale;
-        ctx.drawImage(img, (canvas.width - w)/2, (canvas.height - h)/2, w, h);
+        ctx.drawImage(img, (canvas.width - w) / 2, (canvas.height - h) / 2, w, h);
     }
 
-    // Текст часу
     ctx.fillStyle = "#9999ff";
     ctx.font = "22px Segoe UI";
     ctx.fillText(photoTime, 20, canvas.height - 260);
 }
 
-document.getElementById("minusBtn").addEventListener("click", ()=>{ scale = Math.max(0.4, scale - 0.15); draw(); });
-document.getElementById("plusBtn").addEventListener("click", ()=>{ scale = Math.min(2.5, scale + 0.15); draw(); });
-document.getElementById("saveBtn").addEventListener("click", ()=>{
+document.getElementById("minusBtn").addEventListener("click", () => { scale = Math.max(0.4, scale - 0.15); draw(); });
+document.getElementById("plusBtn").addEventListener("click", () => { scale = Math.min(2.5, scale + 0.15); draw(); });
+document.getElementById("saveBtn").addEventListener("click", () => {
     const link = document.createElement('a');
-    link.download = `Сонце_AIA${channel}_${new Date().toISOString().replace(/[:.]/g,"-")}.jpg`;
+    link.download = `Сонце_${sourceId}_${new Date().toISOString().replace(/[:.]/g, "-")}.jpg`;
     link.href = canvas.toDataURL("image/jpeg");
     link.click();
 });
 
-document.querySelectorAll(".channelBtn").forEach(btn=>{
-    btn.addEventListener("click", async ()=>{
-        channel = btn.dataset.ch;
-        await loadSun(channel);
+document.querySelectorAll(".channelBtn").forEach(btn => {
+    btn.addEventListener("click", async () => {
+        sourceId = btn.dataset.id;
+        await loadSun(sourceId);
         draw();
     });
 });
 
-// Масштаб колесом миші
-canvas.addEventListener("wheel", e=>{
-    if(e.deltaY<0) scale = Math.min(2.5, scale + 0.15);
-    if(e.deltaY>0) scale = Math.max(0.4, scale - 0.15);
+canvas.addEventListener("wheel", e => {
+    if (e.deltaY < 0) scale = Math.min(2.5, scale + 0.15);
+    if (e.deltaY > 0) scale = Math.max(0.4, scale - 0.15);
     draw();
     e.preventDefault();
 });
 
-// Автооновлення кожну хвилину
-setInterval(async ()=>{
-    await loadSun(channel);
-    draw();
-}, 60000);
+setInterval(async () => { await loadSun(sourceId); draw(); }, 60000);
 
-// Початкове завантаження
-loadSun(channel).then(draw);
+loadSun(sourceId).then(draw);
 </script>
 </body>
 </html>
