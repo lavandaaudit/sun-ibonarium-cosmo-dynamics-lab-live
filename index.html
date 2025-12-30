@@ -6,76 +6,63 @@
 <title>Живе Сонце • SDO AIA</title>
 <style>
 /* ================= RESET ================= */
-* { margin: 0; padding: 0; box-sizing: border-box; }
-html, body { width: 100%; height: 100%; background: #000; color: #9fe7ff; font-family: "Courier New", monospace; overflow: hidden; }
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { width:100%; height:100%; background:#000; color:#9fe7ff; font-family:"Courier New", monospace; overflow:hidden; }
 
 /* ================= CANVAS ================= */
-#hackerCanvas, #sunCanvas { position: fixed; inset: 0; z-index: 0; }
-#sunCanvas { z-index: 1; }
+#hackerCanvas, #sunCanvas { position:fixed; inset:0; z-index:0; }
+#sunCanvas { z-index:1; }
 
 /* ================= WRAPPER ================= */
 .wrapper {
-  position: relative;
-  z-index: 2;
-  width: 100%;
-  max-width: 1000px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 15px;
-  text-align: center;
-  padding: 10px;
+  position:relative;
+  z-index:2;
+  width:100%;
+  max-width:1000px;
+  margin:0 auto;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  gap:15px;
+  text-align:center;
+  padding:10px;
 }
 
 /* ================= BUTTONS ================= */
 .controls {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px;
-  margin-bottom: 10px;
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:10px;
+  margin-bottom:10px;
 }
-
 button {
-  background: transparent;
-  border: 1px solid #4dd2ff;
-  color: #4dd2ff;
-  font-family: "Courier New", monospace;
-  font-size: 14px;
-  padding: 8px 16px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: 0.3s;
+  background:transparent;
+  border:1px solid #4dd2ff;
+  color:#4dd2ff;
+  font-family:"Courier New", monospace;
+  font-size:14px;
+  padding:8px 16px;
+  border-radius:6px;
+  cursor:pointer;
+  transition:0.3s;
 }
-button:hover {
-  background: rgba(77,210,255,0.15);
-  box-shadow: 0 0 12px rgba(77,210,255,0.6);
-}
-button.active {
-  background: #4dd2ff;
-  color: #000;
-  box-shadow: 0 0 20px #4dd2ff;
-}
+button:hover { background: rgba(77,210,255,0.15); box-shadow:0 0 12px rgba(77,210,255,0.6); }
+button.active { background:#4dd2ff; color:#000; box-shadow:0 0 20px #4dd2ff; }
 
 /* ================= TEXT ================= */
-.text-block {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-top: 6px;
-}
-.main-text { font-size: 16px; letter-spacing: 1px; }
-.sub-text { font-size: 13px; letter-spacing: 1px; opacity: 0.8; }
-.footer-text { font-size: 10px; letter-spacing: 1px; opacity: 0.45; }
+.text-block { display:flex; flex-direction:column; gap:4px; margin-top:6px; }
+.main-text { font-size:16px; letter-spacing:1px; }
+.sub-text { font-size:13px; letter-spacing:1px; opacity:0.8; }
+.footer-text { font-size:10px; letter-spacing:1px; opacity:0.45; }
 
 /* ================= MOBILE ================= */
-@media (max-width: 600px) {
-  button { font-size: 12px; padding: 6px 12px; }
-  .main-text { font-size: 14px; }
-  .sub-text { font-size: 12px; }
-  .footer-text { font-size: 9px; }
+@media (max-width:600px) {
+  button { font-size:12px; padding:6px 12px; }
+  .main-text { font-size:14px; }
+  .sub-text { font-size:12px; }
+  .footer-text { font-size:9px; }
 }
 </style>
 </head>
@@ -127,7 +114,7 @@ function drawHacker() {
   hctx.fillStyle = "#0ff";
   hctx.font = fontSize + "px Courier New";
   for(let i=0;i<drops.length;i++){
-    const text = letters[Math.floor(Math.random() * letters.length)];
+    const text = letters[Math.floor(Math.random()*letters.length)];
     hctx.fillText(text, i*fontSize, drops[i]*fontSize);
     if(drops[i]*fontSize > H && Math.random() > 0.975) drops[i]=0;
     drops[i]++;
@@ -145,91 +132,85 @@ sunCanvas.height = H;
 let scale = 1.0;
 let channel = 171;
 let img = new Image();
-let photoTime = "завантаження...";
-const photoTimeEl = document.getElementById("photoTime");
+let photoTimeEl = document.getElementById("photoTime");
 
-// Статичне fallback-зображення (для гарантованого відображення)
-const fallbackURL = "https://upload.wikimedia.org/wikipedia/commons/4/4f/Sun_in_visible_light.jpg";
+// Функція формує URL NASA SDO для поточного часу
+function getSunURL(ch) {
+  const now = new Date();
+  const yyyy = now.getUTCFullYear();
+  const mm = String(now.getUTCMonth()+1).padStart(2,'0');
+  const dd = String(now.getUTCDate()).padStart(2,'0');
+  const hh = String(now.getUTCHours()).padStart(2,'0');
+  const min = String(now.getUTCMinutes()).padStart(2,'0');
+  return `https://sdo.gsfc.nasa.gov/assets/img/browse/${yyyy}/${mm}/${dd}/${yyyy}${mm}${dd}_${hh}${min}_${ch}.jpg`;
+}
 
-async function loadSun(ch = 171) {
+function loadSun(ch = 171) {
+  const url = getSunURL(ch);
+  img = new Image();
+  img.crossOrigin = "anonymous";
+  img.src = url;
+  photoTimeEl.textContent = "оновлюється live...";
+  img.onload = () => {
     const now = new Date();
-    const dateStr = now.toISOString();
-    const corsProxy = "https://cors-anywhere.herokuapp.com/";
-    const helioviewerURL = `https://api.helioviewer.org/v1/takeScreenshot/?date=${encodeURIComponent(dateStr)}&imageScale=2.4204409&layers=[SDO,AIA,AIA,${ch},1,100]&x0=0&y0=0&width=1024&height=1024&format=png&display=true&watermark=false`;
-    const url = corsProxy + helioviewerURL;
-
-    try {
-        const resp = await fetch(url, {headers: {"X-Requested-With": "XMLHttpRequest"}});
-        if(!resp.ok) throw new Error("API не відповідає");
-        const blob = await resp.blob();
-        const headerTime = resp.headers.get('X-Observation-Date');
-        photoTime = headerTime ? headerTime.replace("T"," ").split(".")[0]+" UTC"
-                               : dateStr.split(".")[0]+" UTC";
-        photoTimeEl.textContent = photoTime;
-
-        return new Promise(resolve=>{
-            img.onload = ()=>resolve(img);
-            img.src = URL.createObjectURL(blob);
-        });
-    } catch(e) {
-        console.warn("Не вдалося завантажити live-зображення, використовується fallback:", e);
-        photoTime = "немає зв'язку (використано static)";
-        photoTimeEl.textContent = photoTime;
-        img.src = fallbackURL;
-    }
+    photoTimeEl.textContent = `${now.getUTCFullYear()}-${String(now.getUTCMonth()+1).padStart(2,'0')}-${String(now.getUTCDate()).padStart(2,'0')} ${String(now.getUTCHours()).padStart(2,'0')}:${String(now.getUTCMinutes()).padStart(2,'0')} UTC`;
+    drawSun();
+  };
+  img.onerror = () => {
+    // fallback
+    img.src = "https://upload.wikimedia.org/wikipedia/commons/4/4f/Sun_in_visible_light.jpg";
+    photoTimeEl.textContent = "немає live-зв'язку (static)";
+  };
 }
 
 function drawSun() {
-    ctx.clearRect(0,0,W,H);
-    if(img.complete){
-        const w = img.width * scale;
-        const h = img.height * scale;
-        ctx.drawImage(img, (W-w)/2, (H-h)/2, w, h);
-    }
+  ctx.clearRect(0,0,W,H);
+  if(img.complete){
+    const w = img.width * scale;
+    const h = img.height * scale;
+    ctx.drawImage(img, (W-w)/2, (H-h)/2, w, h);
+  }
 }
 
-document.getElementById("minusBtn").addEventListener("click", ()=>{ scale = Math.max(0.4, scale - 0.15); drawSun(); });
-document.getElementById("plusBtn").addEventListener("click", ()=>{ scale = Math.min(2.5, scale + 0.15); drawSun(); });
+/* ================= BUTTONS ================= */
+document.getElementById("minusBtn").addEventListener("click", ()=>{ scale=Math.max(0.4,scale-0.15); drawSun(); });
+document.getElementById("plusBtn").addEventListener("click", ()=>{ scale=Math.min(2.5,scale+0.15); drawSun(); });
 document.getElementById("saveBtn").addEventListener("click", ()=>{
-    const link = document.createElement('a');
-    link.download = `Сонце_AIA${channel}_${new Date().toISOString().replace(/[:.]/g,"-")}.jpg`;
-    link.href = sunCanvas.toDataURL("image/jpeg");
-    link.click();
+  const link = document.createElement('a');
+  link.download = `Сонце_AIA${channel}_${new Date().toISOString().replace(/[:.]/g,"-")}.jpg`;
+  link.href = sunCanvas.toDataURL("image/jpeg");
+  link.click();
 });
 
 document.querySelectorAll(".channelBtn").forEach(btn=>{
-    btn.addEventListener("click", async ()=>{
-        channel = btn.dataset.ch;
-        document.querySelectorAll(".channelBtn").forEach(b=>b.classList.remove("active"));
-        btn.classList.add("active");
-        await loadSun(channel);
-        drawSun();
-    });
+  btn.addEventListener("click", ()=>{
+    channel = btn.dataset.ch;
+    document.querySelectorAll(".channelBtn").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    loadSun(channel);
+  });
 });
 
+// Масштаб колесом
 sunCanvas.addEventListener("wheel", e=>{
-    if(e.deltaY<0) scale = Math.min(2.5, scale + 0.15);
-    if(e.deltaY>0) scale = Math.max(0.4, scale - 0.15);
-    drawSun();
-    e.preventDefault();
+  if(e.deltaY<0) scale=Math.min(2.5,scale+0.15);
+  if(e.deltaY>0) scale=Math.max(0.4,scale-0.15);
+  drawSun();
+  e.preventDefault();
 });
 
 // Автооновлення раз на 5 хвилин
-setInterval(async ()=>{
-    await loadSun(channel);
-    drawSun();
-}, 300000);
+setInterval(()=>{ loadSun(channel); },300000);
 
 window.addEventListener("resize", ()=>{
-    W = hackerCanvas.width = sunCanvas.width = window.innerWidth;
-    H = hackerCanvas.height = sunCanvas.height = window.innerHeight;
-    drawSun();
+  W=hackerCanvas.width=sunCanvas.width=window.innerWidth;
+  H=hackerCanvas.height=sunCanvas.height=window.innerHeight;
+  drawSun();
 });
 
 // Початкове завантаження
-loadSun(channel).then(drawSun);
+loadSun(channel);
 </script>
 
 </body>
 </html>
-
