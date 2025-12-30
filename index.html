@@ -15,21 +15,18 @@ html, body {
   font-family: "Courier New", monospace;
   overflow: hidden;
 }
-
 /* ================= STARS BACKGROUND ================= */
 #starsCanvas {
   position: fixed;
   inset: 0;
   z-index: 0;
 }
-
 /* ================= SUN CANVAS ================= */
 #sunCanvas {
   position: fixed;
   inset: 0;
   z-index: 1;
 }
-
 /* ================= WRAPPER (внизу) ================= */
 .wrapper {
   position: fixed;
@@ -40,26 +37,25 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 15px;
+  gap: 12px;
   padding: 10px;
   pointer-events: none;
 }
-
 .controls {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 12px;
+  align-items: center;
+  gap: 10px;
   pointer-events: auto;
 }
-
 button {
   background: transparent;
   border: 1px solid #4dd2ff;
   color: #4dd2ff;
   font-family: "Courier New", monospace;
-  font-size: 14px;
-  padding: 8px 16px;
+  font-size: 13px;          /* трохи менший шрифт */
+  padding: 6px 12px;        /* менші кнопки */
   border-radius: 6px;
   cursor: pointer;
   transition: 0.3s;
@@ -74,7 +70,6 @@ button.active {
   color: #000;
   box-shadow: 0 0 20px #4dd2ff;
 }
-
 /* ================= TEXT ================= */
 .text-block {
   display: flex;
@@ -85,58 +80,62 @@ button.active {
 }
 .main-text { font-size: 16px; letter-spacing: 1px; }
 .sub-text { font-size: 13px; letter-spacing: 1px; opacity: 0.8; }
-.footer-text { font-size: 10px; letter-spacing: 1px; opacity: 0.45; }
-
+.footer-text { 
+  font-size: 11px; 
+  letter-spacing: 1px; 
+  opacity: 0.6; 
+}
+.footer-text a {
+  color: #4dd2ff;
+  text-decoration: underline;
+}
 /* ================= MOBILE ================= */
 @media (max-width: 600px) {
-  button { font-size: 12px; padding: 6px 12px; }
+  button { 
+    font-size: 11px; 
+    padding: 5px 10px; 
+  }
   .main-text { font-size: 14px; }
   .sub-text { font-size: 12px; }
-  .footer-text { font-size: 9px; }
-  .wrapper { bottom: 10px; gap: 10px; }
+  .footer-text { font-size: 10px; }
+  .wrapper { bottom: 10px; gap: 8px; }
 }
 </style>
 </head>
 <body>
-
 <canvas id="starsCanvas"></canvas>
 <canvas id="sunCanvas"></canvas>
-
 <div class="wrapper">
   <div class="controls">
     <button id="minusBtn">–</button>
     <button id="plusBtn">+</button>
-    <button id="saveBtn">ЗБЕРЕГТИ (JPEG)</button>
-  </div>
-
-  <div class="controls">
     <button class="channelBtn active" data-ch="171">171 Å</button>
     <button class="channelBtn" data-ch="304">304 Å</button>
     <button class="channelBtn" data-ch="193">193 Å</button>
     <button class="channelBtn" data-ch="211">211 Å</button>
   </div>
-
   <div class="text-block">
     <div class="main-text" id="photoTime">завантаження...</div>
     <div class="sub-text">
       Ibonarium Cosmo Dynamics Lab LIVE — Center for Space & Planetary Monitoring
     </div>
     <div class="footer-text">
+      <a href="https://t.me/ibonariumcosmodynamicslablive" target="_blank">
+        https://t.me/ibonariumcosmodynamicslablive
+      </a>
+      <br>
       2026 ibonarium project
     </div>
   </div>
 </div>
-
 <script>
 /* ================= STARS BACKGROUND ================= */
 const starsCanvas = document.getElementById("starsCanvas");
 const sctx = starsCanvas.getContext("2d");
 let W = starsCanvas.width = window.innerWidth;
 let H = starsCanvas.height = window.innerHeight;
-
 const stars = [];
 const numStars = 300;
-
 for (let i = 0; i < numStars; i++) {
   stars.push({
     x: Math.random() * W,
@@ -146,14 +145,12 @@ for (let i = 0; i < numStars; i++) {
     opacity: Math.random() * 0.8 + 0.2
   });
 }
-
 function drawStars() {
   sctx.clearRect(0, 0, W, H);
   sctx.fillStyle = "#fff";
   stars.forEach(star => {
     sctx.globalAlpha = star.opacity;
     sctx.fillRect(star.x, star.y, star.size, star.size);
-
     star.y += star.speed;
     if (star.y > H) star.y = 0;
   });
@@ -167,26 +164,22 @@ const sunCanvas = document.getElementById('sunCanvas');
 const ctx = sunCanvas.getContext('2d');
 sunCanvas.width = W;
 sunCanvas.height = H;
-
-let scale = 0.4;  // Початковий мінімальний масштаб — як ти просив!
+let scale = 0.4;
 let channel = 171;
 let img = new Image();
 const photoTimeEl = document.getElementById("photoTime");
 const fallbackURL = "https://upload.wikimedia.org/wikipedia/commons/4/4f/Sun_in_visible_light.jpg";
-
 const channelMap = {
   171: "0171",
   304: "0304",
   193: "0193",
   211: "0211"
 };
-
-const resolution = "1024"; // можна "2048" або "4096"
+const resolution = "1024";
 
 async function loadSun(ch = 171) {
   const chStr = channelMap[ch] || "0171";
   const url = `https://sdo.gsfc.nasa.gov/assets/img/latest/latest_${resolution}_${chStr}.jpg`;
-
   return new Promise((resolve) => {
     img.onload = () => {
       const now = new Date();
@@ -219,17 +212,9 @@ document.getElementById("minusBtn").addEventListener("click", () => {
   scale = Math.max(0.4, scale - 0.15);
   drawSun();
 });
-
 document.getElementById("plusBtn").addEventListener("click", () => {
   scale = Math.min(2.5, scale + 0.15);
   drawSun();
-});
-
-document.getElementById("saveBtn").addEventListener("click", () => {
-  const link = document.createElement('a');
-  link.download = `Сонце_AIA${channel}_${new Date().toISOString().replace(/[:.]/g, "-")}.jpg`;
-  link.href = sunCanvas.toDataURL("image/jpeg", 0.95);
-  link.click();
 });
 
 document.querySelectorAll(".channelBtn").forEach(btn => {
@@ -260,8 +245,7 @@ window.addEventListener("resize", () => {
 });
 
 /* ================= СТАРТ ================= */
-loadSun(channel); // завантажить зображення і намалює в мінімальному масштабі
+loadSun(channel);
 </script>
-
 </body>
 </html>
