@@ -42,7 +42,7 @@ html, body {
   align-items: center;
   gap: 15px;
   padding: 10px;
-  pointer-events: none; /* щоб не заважав колесу миші */
+  pointer-events: none;
 }
 
 .controls {
@@ -168,7 +168,7 @@ const ctx = sunCanvas.getContext('2d');
 sunCanvas.width = W;
 sunCanvas.height = H;
 
-let scale = 1.0;
+let scale = 0.4;  // Початковий мінімальний масштаб — як ти просив!
 let channel = 171;
 let img = new Image();
 const photoTimeEl = document.getElementById("photoTime");
@@ -198,9 +198,10 @@ async function loadSun(ch = 171) {
       console.warn("Fallback до статичного зображення");
       photoTimeEl.textContent = "немає зв'язку (static)";
       img.src = fallbackURL;
+      drawSun();
       resolve();
     };
-    img.src = url + "?" + Date.now(); // антикеш
+    img.src = url + "?" + Date.now();
   });
 }
 
@@ -249,7 +250,7 @@ sunCanvas.addEventListener("wheel", e => {
 });
 
 /* ================= АВТООНОВЛЕННЯ ================= */
-setInterval(() => loadSun(channel), 300000); // 5 хвилин
+setInterval(() => loadSun(channel), 300000); // кожні 5 хвилин
 
 /* ================= РЕСАЙЗ ================= */
 window.addEventListener("resize", () => {
@@ -259,7 +260,7 @@ window.addEventListener("resize", () => {
 });
 
 /* ================= СТАРТ ================= */
-loadSun(channel);
+loadSun(channel); // завантажить зображення і намалює в мінімальному масштабі
 </script>
 
 </body>
