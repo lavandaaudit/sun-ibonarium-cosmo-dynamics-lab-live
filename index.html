@@ -1,183 +1,58 @@
 <!DOCTYPE html>
 <html lang="uk">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Живе Сонце • SDO AIA</title>
-<style>
-/* ================= RESET & BODY ================= */
-* { margin: 0; padding: 0; box-sizing: border-box; }
-html, body {
-  width: 100%;
-  height: 100%;
-  background: #000;
-  color: #9fe7ff;
-  font-family: "Courier New", monospace;
-  overflow: hidden;
-}
-/* ================= STARS BACKGROUND ================= */
-#starsCanvas {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-}
-/* ================= SUN CANVAS ================= */
-#sunCanvas {
-  position: fixed;
-  inset: 0;
-  z-index: 1;
-}
-/* ================= WRAPPER (внизу) ================= */
-.wrapper {
-  position: fixed;
-  bottom: 15px;           
-  left: 0;
-  right: 0;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;              
-  padding: 8px;
-  pointer-events: none;
-}
-
-/* ================= НОВИЙ БЛОК КОСМІЧНОЇ ПОГОДИ ================= */
-.space-weather {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  pointer-events: auto;
-  text-align: center;
-}
-.space-weather .title {
-  font-size: 12px;
-  letter-spacing: 1.5px;
-  opacity: 0.8;
-}
-.space-weather .kp-bar {
-  width: 260px;
-  height: 4px;
-  background: rgba(77,210,255,0.15);
-  position: relative;
-  margin: 4px 0;
-}
-.space-weather .kp-fill {
-  height: 100%;
-  width: 0%;
-  background: linear-gradient(90deg, #9fe7ff, #4dd2ff);
-  transition: width 0.8s ease;
-  box-shadow: 0 0 8px rgba(77,210,255,0.4);
-}
-.space-weather .data-line {
-  font-size: 11px;
-  letter-spacing: 1.2px;
-  opacity: 0.9;
-}
-.space-weather .warning {
-  font-size: 11px;
-  letter-spacing: 1.2px;
-  opacity: 0;
-  transition: opacity 0.5s;
-}
-
-/* ================= CONTROLS ================= */
-.controls {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;               
-  pointer-events: auto;
-}
-button {
-  background: transparent;
-  border: 1px solid #4dd2ff;
-  color: #4dd2ff;
-  font-family: "Courier New", monospace;
-  font-size: 12px;        
-  padding: 5px 10px;       
-  border-radius: 6px;
-  cursor: pointer;
-  transition: 0.3s;
-  pointer-events: auto;
-}
-button:hover {
-  background: rgba(77,210,255,0.15);
-  box-shadow: 0 0 10px rgba(77,210,255,0.6);
-}
-button.active {
-  background: #4dd2ff;
-  color: #000;
-  box-shadow: 0 0 18px #4dd2ff;
-}
-/* ================= TEXT ================= */
-.text-block {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  text-align: center;
-  pointer-events: auto;
-}
-.main-text { 
-  font-size: 14px;        
-  letter-spacing: 1px; 
-}
-.sub-text { 
-  font-size: 12px;        
-  letter-spacing: 1px; 
-  opacity: 0.8; 
-}
-.footer-text {
-  font-size: 10px;        
-  letter-spacing: 1px;
-  opacity: 0.6;
-}
-.footer-text a {
-  color: #4dd2ff;
-  text-decoration: underline;
-}
-/* ================= MOBILE ================= */
-@media (max-width: 600px) {
-  button {
-    font-size: 10px;
-    padding: 4px 8px;
-  }
-  .main-text { font-size: 13px; }
-  .sub-text { font-size: 11px; }
-  .footer-text { font-size: 9px; }
-  .wrapper { bottom: 8px; gap: 8px; }
-  .space-weather .kp-bar { width: 200px; }
-  .space-weather .title, .space-weather .data-line, .space-weather .warning {
-    font-size: 10px;
-  }
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Живе Сонце • SDO AIA</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; background: #000; color: #9fe7ff; font-family: "Courier New", monospace; overflow: hidden; }
+    #starsCanvas { position: fixed; inset: 0; z-index: 0; }
+    #sunCanvas { position: fixed; inset: 0; z-index: 1; }
+    .wrapper { position: fixed; bottom: 15px; left: 0; right: 0; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 8px; pointer-events: none; }
+    .space-weather { display: flex; flex-direction: column; align-items: center; gap: 6px; pointer-events: auto; text-align: center; }
+    .space-weather .title { font-size: 12px; letter-spacing: 1.5px; opacity: 0.8; }
+    .space-weather .kp-bar { width: 260px; height: 4px; background: rgba(77,210,255,0.15); position: relative; margin: 4px 0; }
+    .space-weather .kp-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #9fe7ff, #4dd2ff); transition: width 0.8s ease; box-shadow: 0 0 8px rgba(77,210,255,0.4); }
+    .space-weather .data-line { font-size: 11px; letter-spacing: 1.2px; opacity: 0.9; }
+    .space-weather .warning { font-size: 11px; letter-spacing: 1.2px; opacity: 0; transition: opacity 0.5s; }
+    .controls { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px; pointer-events: auto; }
+    button { background: transparent; border: 1px solid #4dd2ff; color: #4dd2ff; font-family: "Courier New", monospace; font-size: 12px; padding: 5px 10px; border-radius: 6px; cursor: pointer; transition: 0.3s; pointer-events: auto; }
+    button:hover { background: rgba(77,210,255,0.15); box-shadow: 0 0 10px rgba(77,210,255,0.6); }
+    button.active { background: #4dd2ff; color: #000; box-shadow: 0 0 18px #4dd2ff; }
+    .text-block { display: flex; flex-direction: column; gap: 4px; text-align: center; pointer-events: auto; }
+    .main-text { font-size: 14px; letter-spacing: 1px; }
+    .sub-text { font-size: 12px; letter-spacing: 1px; opacity: 0.8; }
+    .footer-text { font-size: 10px; letter-spacing: 1px; opacity: 0.6; }
+    .footer-text a { color: #4dd2ff; text-decoration: underline; }
+    @media (max-width: 600px) {
+      button { font-size: 10px; padding: 4px 8px; }
+      .main-text { font-size: 13px; }
+      .sub-text { font-size: 11px; }
+      .footer-text { font-size: 9px; }
+      .wrapper { bottom: 8px; gap: 8px; }
+      .space-weather .kp-bar { width: 200px; }
+      .space-weather .title, .space-weather .data-line, .space-weather .warning { font-size: 10px; }
+    }
+  </style>
 </head>
 <body>
 <canvas id="starsCanvas"></canvas>
 <canvas id="sunCanvas"></canvas>
 
 <div class="wrapper">
-  <!-- Блок космічної погоди -->
   <div class="space-weather">
     <div class="title">КОСМІЧНА ПОГОДА</div>
-    
     <div>
       <div class="data-line" id="kp-text">KP: —</div>
-      <div class="kp-bar">
-        <div class="kp-fill" id="kp-fill"></div>
-      </div>
+      <div class="kp-bar"><div class="kp-fill" id="kp-fill"></div></div>
       <div class="warning" id="storm-warning"></div>
     </div>
-    
     <div class="data-line" id="solar-wind-label">ШВИДКІСТЬ: — KM/S │ ЩІЛЬНІСТЬ: — P/CM³</div>
     <div class="data-line" id="bz-label">BZ: — НТ</div>
     <div class="data-line" id="bz-status-label">ОЧІКУВАННЯ ДАНИХ...</div>
   </div>
 
-  <!-- Кнопки перемикання каналів -->
   <div class="controls">
     <button id="minusBtn">–</button>
     <button id="plusBtn">+</button>
@@ -187,24 +62,18 @@ button.active {
     <button class="channelBtn" data-ch="211">211 Å</button>
   </div>
 
-  <!-- Текстова інформація -->
   <div class="text-block">
     <div class="main-text" id="photoTime">завантаження...</div>
-    <div class="sub-text">
-      Ibonarium Cosmo Dynamics Lab LIVE — Center for Space & Planetary Monitoring
-    </div>
+    <div class="sub-text">Ibonarium Cosmo Dynamics Lab LIVE — Center for Space & Planetary Monitoring</div>
     <div class="footer-text">
-      <a href="https://t.me/ibonariumcosmodynamicslablive" target="_blank">
-        https://t.me/ibonariumcosmodynamicslablive
-      </a>
-      <br>
+      <a href="https://t.me/ibonariumcosmodynamicslablive" target="_blank">https://t.me/ibonariumcosmodynamicslablive</a><br>
       2026 ibonarium project by lavanda audit
     </div>
   </div>
 </div>
 
 <script>
-/* ================= STARS BACKGROUND ================= */
+// ================= ЗІРКИ =================
 const starsCanvas = document.getElementById("starsCanvas");
 const sctx = starsCanvas.getContext("2d");
 let W = starsCanvas.width = window.innerWidth;
@@ -212,13 +81,7 @@ let H = starsCanvas.height = window.innerHeight;
 const stars = [];
 const numStars = 300;
 for (let i = 0; i < numStars; i++) {
-  stars.push({
-    x: Math.random() * W,
-    y: Math.random() * H,
-    size: Math.random() * 1.5 + 0.5,
-    speed: Math.random() * 0.5 + 0.1,
-    opacity: Math.random() * 0.8 + 0.2
-  });
+  stars.push({ x: Math.random() * W, y: Math.random() * H, size: Math.random() * 1.5 + 0.5, speed: Math.random() * 0.5 + 0.1, opacity: Math.random() * 0.8 + 0.2 });
 }
 function drawStars() {
   sctx.clearRect(0, 0, W, H);
@@ -234,43 +97,64 @@ function drawStars() {
 }
 drawStars();
 
-/* ================= SUN CANVAS ================= */
+// ================= СОНЦЕ =================
 const sunCanvas = document.getElementById('sunCanvas');
 const ctx = sunCanvas.getContext('2d');
-sunCanvas.width = W;
-sunCanvas.height = H;
-let scale = 0.4;
+sunCanvas.width = W; sunCanvas.height = H;
+
+let scale = 0.9;  // Початковий масштаб — комфортний для 1024px зображень
 let channel = 171;
-let img = new Image();
+const img = new Image();
 const photoTimeEl = document.getElementById("photoTime");
 const fallbackURL = "https://upload.wikimedia.org/wikipedia/commons/4/4f/Sun_in_visible_light.jpg";
-const channelMap = {
-  171: "0171",
-  304: "0304",
-  193: "0193",
-  211: "0211"
-};
-const resolution = "1024";
+
+const channelMap = { 171: "0171", 304: "0304", 193: "0193", 211: "0211" };
+const sizePrefixes = ["l", "f"]; // спочатку 1024 (l), потім 4096 (f)
 
 async function loadSun(ch = 171) {
   const chStr = channelMap[ch] || "0171";
-  const url = `https://sdo.gsfc.nasa.gov/assets/img/latest/latest_${resolution}_${chStr}.jpg`;
-  return new Promise((resolve) => {
-    img.onload = () => {
-      const now = new Date();
-      photoTimeEl.textContent = now.toISOString().replace("T", " ").split(".")[0] + " UTC (прибл.)";
-      drawSun();
-      resolve();
-    };
-    img.onerror = () => {
-      console.warn("Fallback до статичного зображення");
-      photoTimeEl.textContent = "немає зв'язку (static)";
-      img.src = fallbackURL;
-      drawSun();
-      resolve();
-    };
-    img.src = url + "?" + Date.now();
-  });
+  let loaded = false;
+  let usedSize = "";
+  photoTimeEl.textContent = "завантаження з LMSAL (спроба 1024px)...";
+
+  for (const prefix of sizePrefixes) {
+    const url = `http://sdowww.lmsal.com/sdomedia/SunInTime/mostrecent/${prefix}${chStr}.jpg`;
+    try {
+      img.src = url + "?t=" + Date.now();
+
+      await new Promise((resolve, reject) => {
+        const timeout = setTimeout(() => reject("timeout"), 15000);
+        img.onload = () => {
+          clearTimeout(timeout);
+          if (img.naturalWidth > 500 && img.naturalHeight > 500) {
+            loaded = true;
+            usedSize = prefix === "l" ? "1024" : "4096";
+            resolve();
+          } else {
+            reject("small/empty");
+          }
+        };
+        img.onerror = () => { clearTimeout(timeout); reject("load error"); };
+      });
+
+      if (loaded) break;
+    } catch (e) {
+      console.log(`Помилка ${prefix}${chStr}: ${e}`);
+    }
+  }
+
+  const now = new Date();
+  const timeStr = now.toISOString().replace("T", " ").split(".")[0] + " UTC";
+
+  if (loaded) {
+    photoTimeEl.textContent = `${timeStr} (AIA ${ch} Å, ${usedSize}px)`;
+    drawSun();
+  } else {
+    console.warn("Не вдалося → fallback");
+    photoTimeEl.textContent = "немає зв'язку (static)";
+    img.src = fallbackURL + "?t=" + Date.now();
+    img.onload = drawSun;
+  }
 }
 
 function drawSun() {
@@ -283,76 +167,35 @@ function drawSun() {
   }
 }
 
-/* ================= КЕРУВАННЯ КАНАЛАМИ ТА МАСШТАБОМ ================= */
-document.getElementById("minusBtn").addEventListener("click", () => {
-  scale = Math.max(0.4, scale - 0.15);
-  drawSun();
-});
-document.getElementById("plusBtn").addEventListener("click", () => {
-  scale = Math.min(2.5, scale + 0.15);
-  drawSun();
-});
+// ================= Керування =================
+document.getElementById("minusBtn").addEventListener("click", () => { scale = Math.max(0.4, scale - 0.1); drawSun(); });
+document.getElementById("plusBtn").addEventListener("click", () => { scale = Math.min(2.5, scale + 0.1); drawSun(); });
 
 document.querySelectorAll(".channelBtn").forEach(btn => {
   btn.addEventListener("click", async () => {
     channel = parseInt(btn.dataset.ch);
     document.querySelectorAll(".channelBtn").forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
-    photoTimeEl.textContent = "завантаження...";
     await loadSun(channel);
   });
 });
 
 sunCanvas.addEventListener("wheel", e => {
   e.preventDefault();
-  if (e.deltaY < 0) scale = Math.min(2.5, scale + 0.15);
-  if (e.deltaY > 0) scale = Math.max(0.4, scale - 0.15);
+  if (e.deltaY < 0) scale = Math.min(2.5, scale + 0.1);
+  if (e.deltaY > 0) scale = Math.max(0.4, scale - 0.1);
   drawSun();
 });
 
-/* ================= ДАНІ КОСМІЧНОЇ ПОГОДИ ================= */
+// ================= Космічна погода (без змін) =================
 const KP_URL = "https://services.swpc.noaa.gov/json/planetary_k_index_1m.json";
 const SW_URL = "https://services.swpc.noaa.gov/products/solar-wind/plasma-6-hour.json";
 const BZ_URL = "https://services.swpc.noaa.gov/products/solar-wind/mag-6-hour.json";
 
-let currentKp = null;
+async function getKp() { try { const r = await fetch(KP_URL); const d = await r.json(); for (let i = d.length - 1; i >= 0; i--) { if (d[i].kp_index !== null) return parseFloat(d[i].kp_index); } } catch {} return null; }
+async function getSW() { try { const r = await fetch(SW_URL); const d = await r.json(); for (let i = d.length - 1; i >= 0; i--) { const row = d[i]; if (row.length >= 3 && row[1] && row[2]) return [parseFloat(row[1]), parseFloat(row[2])]; } } catch {} return [null, null]; }
+async function getBz() { try { const r = await fetch(BZ_URL); const d = await r.json(); for (let i = d.length - 1; i >= 0; i--) { const row = d[i]; if (row.length >= 5 && row[4] !== null) return parseFloat(row[4]); } } catch {} return null; }
 
-async function getKp() {
-  try {
-    const r = await fetch(KP_URL);
-    const d = await r.json();
-    for (let i = d.length - 1; i >= 0; i--) {
-      if (d[i].kp_index !== null) return parseFloat(d[i].kp_index);
-    }
-  } catch (e) { console.error(e); }
-  return null;
-}
-
-async function getSW() {
-  try {
-    const r = await fetch(SW_URL);
-    const d = await r.json();
-    for (let i = d.length - 1; i >= 0; i--) {
-      const row = d[i];
-      if (row.length >= 3 && row[1] && row[2]) return [parseFloat(row[1]), parseFloat(row[2])];
-    }
-  } catch (e) { console.error(e); }
-  return [null, null];
-}
-
-async function getBz() {
-  try {
-    const r = await fetch(BZ_URL);
-    const d = await r.json();
-    for (let i = d.length - 1; i >= 0; i--) {
-      const row = d[i];
-      if (row.length >= 5 && row[4]) return parseFloat(row[4]);
-    }
-  } catch (e) { console.error(e); }
-  return null;
-}
-
-/* Оновлення інтерфейсу */
 function updateSpaceWeather(kp, spd, den, bz) {
   const kpText = document.getElementById('kp-text');
   const kpFill = document.getElementById('kp-fill');
@@ -361,30 +204,19 @@ function updateSpaceWeather(kp, spd, den, bz) {
   const bzLabel = document.getElementById('bz-label');
   const bzStatus = document.getElementById('bz-status-label');
 
-  // Kp
   if (kp === null) {
-    kpText.textContent = 'KP: —';
-    kpFill.style.width = '0%';
-    stormWarning.textContent = '';
-    stormWarning.style.opacity = '0';
+    kpText.textContent = 'KP: —'; kpFill.style.width = '0%'; stormWarning.style.opacity = '0';
   } else {
-    currentKp = kp;
-    kpText.textContent = `KP: ${kp.toFixed(2)}`;
-    kpFill.style.width = `${kp * 10}%`;
-
-    let message = '';
-    let color = '#9fe7ff';
+    kpText.textContent = `KP: ${kp.toFixed(1)}`;
+    kpFill.style.width = `${Math.min(kp * 10, 100)}%`;
+    let message = '', color = '#9fe7ff';
     if (kp >= 7) { message = 'ГЕОМАГНІТНА БУРЯ G3 — СИЛЬНА'; color = '#ff3366'; }
     else if (kp >= 6) { message = 'ГЕОМАГНІТНА БУРЯ G2 — ПОМІРНА'; color = '#ff6666'; }
     else if (kp >= 5) { message = 'ГЕОМАГНІТНА БУРЯ G1 — СЛАБКА'; color = '#ffaa66'; }
     else if (kp >= 4) { message = 'АКТИВНІ УМОВИ — МОЖЛИВІ ПОЛЯРНІ СЯЙВА'; color = '#ffcc88'; }
-
-    stormWarning.textContent = message;
-    stormWarning.style.color = color;
-    stormWarning.style.opacity = message ? '1' : '0';
+    stormWarning.textContent = message; stormWarning.style.color = color; stormWarning.style.opacity = message ? '1' : '0';
   }
 
-  // Сонячний вітер
   if (spd && den) {
     swLabel.textContent = `ШВИДКІСТЬ: ${spd.toFixed(0)} KM/S │ ЩІЛЬНІСТЬ: ${den.toFixed(1)} P/CM³`;
     swLabel.style.opacity = spd > 600 ? '1' : '0.8';
@@ -392,9 +224,8 @@ function updateSpaceWeather(kp, spd, den, bz) {
     swLabel.textContent = 'ШВИДКІСТЬ: — KM/S │ ЩІЛЬНІСТЬ: — P/CM³';
   }
 
-  // Bz
   if (bz !== null) {
-    let col, status, op = 1;
+    let col, status;
     if (bz < -12) { col = '#ff3366'; status = 'ЕКСТРЕМАЛЬНА БУРЯ — АВРОРА В УКРАЇНІ!'; }
     else if (bz < -8) { col = '#ff6666'; status = 'СИЛЬНА БУРЯ'; }
     else if (bz < -5) { col = '#ffaa66'; status = 'ПОПЕРЕДЖЕННЯ'; }
@@ -402,15 +233,10 @@ function updateSpaceWeather(kp, spd, den, bz) {
     else if (bz > 8) { col = '#66ff99'; status = 'АБСОЛЮТНИЙ СПОКІЙ'; }
     else if (bz > 3) { col = '#99ffcc'; status = 'СПОКІЙНО'; }
     else { col = '#dddd88'; status = 'НЕЙТРАЛЬНО'; }
-
-    bzLabel.textContent = `BZ: ${bz.toFixed(1)} НТ`;
-    bzLabel.style.color = col;
-    bzStatus.textContent = status;
-    bzStatus.style.color = col;
-    bzStatus.style.opacity = op;
+    bzLabel.textContent = `BZ: ${bz.toFixed(1)} НТ`; bzLabel.style.color = col;
+    bzStatus.textContent = status; bzStatus.style.color = col; bzStatus.style.opacity = '1';
   } else {
-    bzLabel.textContent = 'BZ: — НТ';
-    bzStatus.textContent = 'ОЧІКУВАННЯ ДАНИХ...';
+    bzLabel.textContent = 'BZ: — НТ'; bzStatus.textContent = 'ОЧІКУВАННЯ ДАНИХ...'; bzStatus.style.opacity = '0.7';
   }
 }
 
@@ -421,21 +247,19 @@ async function updateSpaceWeatherData() {
   updateSpaceWeather(kp, spd, den, bz);
 }
 
-/* ================= АВТООНОВЛЕННЯ ================= */
-setInterval(() => loadSun(channel), 300000); // Сонце кожні 5 хв
-setInterval(updateSpaceWeatherData, 300000); // Космічна погода кожні 5 хв
+// ================= ТАЙМЕРИ =================
+setInterval(() => loadSun(channel), 240000); // 4 хв
+setInterval(updateSpaceWeatherData, 300000); // 5 хв
 
-/* ================= РЕСАЙЗ ================= */
 window.addEventListener("resize", () => {
   W = starsCanvas.width = sunCanvas.width = window.innerWidth;
   H = starsCanvas.height = sunCanvas.height = window.innerHeight;
   drawSun();
 });
 
-/* ================= СТАРТ ================= */
+// ================= СТАРТ =================
 loadSun(channel);
 updateSpaceWeatherData();
 </script>
 </body>
 </html>
-
